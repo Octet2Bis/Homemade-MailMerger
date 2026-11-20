@@ -1,0 +1,24 @@
+# Logs & temporaries
+*.log
+npm-debug.log*
+.system_generated/
+
+# OS & editors
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.zip
+
+# Local state: secrets, OAuth tokens, contacts, clicks, quota. Never versioned.
+# Defaults live in data/config.example.json.
+data/config.json
+data/google_auth.json
+data/campaigns.json
+data/dispatch_state.json
+data/tracking_events.json
+data/*.csv
+gateway/gateway_events.json
+output/
+node_modules/

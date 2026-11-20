@@ -1,0 +1,32 @@
+{
+  "app_name": "Outbound Sniper Studio",
+  "version": "2.0.0",
+  "host": "127.0.0.1",
+  "port": 3500,
+  "daily_send_limit": 28,
+  "min_delay_seconds": 420,
+  "max_delay_seconds": 900,
+  "working_hours": {
+    "enabled": true,
+    "start": "08:30",
+    "end": "18:30",
+    "days": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  "sender": {
+    "name": "",
+    "signature": ""
+  },
+  "tracking": {
+    "vm_tracking_url": "",
+    "secret": ""
+  },
+  "hunter": {
+    "api_key": ""
+  }
+}

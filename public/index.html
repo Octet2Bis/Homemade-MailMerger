@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Outbound Sniper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Header Supérieur Épuré avec Sélecteur Expéditeur & Score Délivrabilité -->
+    <header class="app-header">
+      <div class="brand">
+        <span class="badge-brand">SNIPER</span>
+        <h1>Campagnes Outbound</h1>
+        <span class="tab-pill" id="header-sender" title="Compte Google utilisé pour l'envoi">Google non connecté</span>
+        <button type="button" class="tab-pill tab-pill-green" id="header-score-badge" style="display:none;" title="Cliquer pour inspecter le score de délivrabilité">
+          🛡️ Délivrabilité : <strong>--/100</strong>
+        </button>
+        <button type="button" class="tab-pill" id="header-hunter-badge" style="display:none;" title="Cliquer pour voir les quotas Hunter.io">
+          🎯 Hunter : <strong id="header-hunter-credits">--</strong>
+        </button>
+      </div>
+      <div class="header-status">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span id="header-quota">Quota du jour : <strong>–</strong></span>
+        <button class="btn btn-primary btn-sm" id="btn-open-profile" title="Compte Google, signature, tracking et Hunter.io">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>Profil & connexions</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 1. VUE HOMEPAGE (Création & Liste des Campagnes) -->
+    <div id="view-home">
+      <div class="home-hero">
+        <div>
+          <h2>Vos Campagnes de Prospection</h2>
+          <p class="section-desc">Chaque campagne dispose de sa propre audience isolée, de son modèle et de sa séquence d'envoi.</p>
+        </div>
+        <button class="btn btn-primary" id="btn-create-campaign-home">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span>Nouvelle Campagne</span>
+        </button>
+      </div>
+
+      <div class="campaigns-grid" id="campaigns-grid-container">
+        <div class="campaigns-empty-state" id="campaigns-empty-state">
+          <div class="empty-state-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+              <line x1="12" y1="22.08" x2="12" y2="12"/>
+            </svg>
+          </div>
+          <h3>Aucune campagne créée</h3>
+          <p>Commencez par créer votre première campagne de prospection ciblée. Chaque campagne dispose de son audience isolée, son modèle et sa cadence.</p>
+          <button class="btn btn-primary" id="btn-create-campaign-empty">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>Créer ma première campagne</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. VUE WORKSPACE CAMPAGNE (Workflow 5 Étapes Chronologiques en Sidebar) -->
+    <div id="view-workspace" class="workspace-layout" style="display:none;">
+      <!-- Sidebar de Navigation Chronologique -->
+      <aside class="workspace-sidebar" aria-label="Navigation chronologique de la campagne">
+        <div class="sidebar-header">
+          <div class="nav-breadcrumb" id="nav-breadcrumb-back">
+            <button class="btn-breadcrumb" id="btn-back-home" title="Retourner au tableau de bord des campagnes">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+              <span>Retour Campagnes</span>
+            </button>
+          </div>
+          <div class="sidebar-campaign-meta">
+            <span class="sidebar-pill">Campagne active</span>
+            <h2 id="active-campaign-title" class="sidebar-campaign-name">Campagne</h2>
+          </div>
+        </div>
+
+        <!-- Étapes Chronologiques 1 à 5 -->
+        <nav class="sidebar-steps-nav" role="tablist" aria-label="Étapes de la campagne">
+          <div class="sidebar-nav-header">PARCOURS D'EXPÉDITION</div>
+
+          <button class="tab-btn sidebar-step-btn active" role="tab" aria-selected="true" data-target="panel-contacts" id="tab-contacts">
+            <div class="step-btn-content">
+              <span class="step-badge">1</span>
+              <div class="step-text-col">
+                <span class="step-name">Contacts & Import</span>
+                <span class="step-subtitle">Import & vérification</span>
+              </div>
+            </div>
+            <span class="tab-pill" id="tab-count-contacts">0</span>
+          </button>
+
+          <button class="tab-btn sidebar-step-btn" role="tab" aria-selected="false" data-target="panel-messages" id="tab-messages">
+            <div class="step-btn-content">
+              <span class="step-badge">2</span>
+              <div class="step-text-col">
+                <span class="step-name">Modèles & Message</span>
+                <span class="step-subtitle">Spintax & personnalisation</span>
+              </div>
+            </div>
+          </button>
+
+          <button class="tab-btn sidebar-step-btn" role="tab" aria-selected="false" data-target="panel-score-checker" id="tab-score-checker">
+            <div class="step-btn-content">
+              <span class="step-badge">3</span>
+              <div class="step-text-col">
+                <span class="step-name">Score Anti-Spam</span>
+                <span class="step-subtitle">DNS, contenu, liens</span>
+              </div>
+            </div>
+            <span class="tab-pill tab-pill-green" id="tab-score-pill">100/100</span>
+          </button>
+
+          <button class="tab-btn sidebar-step-btn" role="tab" aria-selected="false" data-target="panel-dispatch" id="tab-dispatch">
+            <div class="step-btn-content">
+              <span class="step-badge">4</span>
+              <div class="step-text-col">
+                <span class="step-name">Envoi & Sécurité</span>
+                <span class="step-subtitle">Cadence & quota</span>
+              </div>
+            </div>
+            <span class="tab-pill tab-pill-amber" id="tab-status-badge">–</span>
+          </button>
+
+          <button class="tab-btn sidebar-step-btn" role="tab" aria-selected="false" data-target="panel-performance" id="tab-performance">
+            <div class="step-btn-content">
+              <span class="step-badge">5</span>
+              <div class="step-text-col">
+                <span class="step-name">Performances</span>
+                <span class="step-subtitle">Clics</span>
+              </div>
+            </div>
+            <span class="tab-pill tab-pill-green" id="tab-stat-ctr">0 clic</span>
+          </button>
+        </nav>
+
+      </aside>
+
+      <!-- Conteneur Principal des Panneaux (Viewport 100vh sans scroll global) -->
+      <main class="workspace-main tabs-content-container">
+        <!-- Onglet 1 : Contacts & Délivrabilité -->
+        <section class="tab-panel active" id="panel-contacts" role="tabpanel">
+          <div class="panel-card contacts-panel-card">
+            <div class="card-header">
+              <div>
+                <h2>Contacts cibles de la campagne</h2>
+                <p class="section-desc">Audience propre à la campagne. Seules les adresses vérifiées sont envoyées par défaut.</p>
+              </div>
+              <div class="header-actions">
+                <button class="btn btn-ghost btn-sm" id="btn-import-trigger" title="Importer un nouveau fichier CSV">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <span>Importer CSV</span>
+                </button>
+                <input type="file" id="file-input" accept=".csv,text/csv" style="display:none;" aria-label="Fichier source">
+                <button class="btn btn-ghost btn-sm" id="btn-apply-clean" title="Purger les invalides et ne garder que les certifiés">
+                  <span>✨ Garder vérifiés</span>
+                </button>
+                <button class="btn btn-ghost btn-sm" id="btn-export-clean" title="Télécharger la liste nettoyée">
+                  <span>Export Clean</span>
+                </button>
+                <button class="btn btn-ghost btn-sm text-error" id="btn-clear-contacts" title="Purger la liste">
+                  <span>Vider</span>
+                </button>
+                <label class="switch-label" title="Hunter.io vérifie les adresses que la sonde SMTP ne peut pas prouver (consomme des crédits)">
+                  <input type="checkbox" id="toggle-use-hunter">
+                  <span>Compléter avec Hunter.io</span>
+                </label>
+                <button class="btn btn-primary btn-sm" id="btn-verify">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  <span id="btn-verify-text">Vérifier les adresses</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Barre de Triage & Filtrage en Paquets -->
+            <div class="triage-pills-bar">
+              <div class="triage-filters" role="group" aria-label="Filtres de délivrabilité">
+                <button type="button" class="triage-pill active" data-filter="ALL" id="triage-filter-all" onclick="window.SniperUIContacts && window.SniperUIContacts.setFilter('ALL')">
+                  <span>Tous</span>
+                  <span class="badge" id="filter-count-all">0</span>
+                </button>
+                <button type="button" class="triage-pill triage-pill-deliverable" data-filter="DELIVERABLE" id="triage-filter-deliverable" onclick="window.SniperUIContacts && window.SniperUIContacts.setFilter('DELIVERABLE')">
+                  <span>🟢 Vérifiées</span>
+                  <span class="badge" id="filter-count-deliverable">0</span>
+                </button>
+                <button type="button" class="triage-pill" data-filter="UNVERIFIED" id="triage-filter-unverified" onclick="window.SniperUIContacts && window.SniperUIContacts.setFilter('UNVERIFIED')">
+                  <span>⚪ Non prouvées</span>
+                  <span class="badge" id="filter-count-unverified">0</span>
+                </button>
+                <button type="button" class="triage-pill triage-pill-risky" data-filter="RISKY" id="triage-filter-risky" onclick="window.SniperUIContacts && window.SniperUIContacts.setFilter('RISKY')">
+                  <span>🟡 Risqués</span>
+                  <span class="badge" id="filter-count-risky">0</span>
+                </button>
+                <button type="button" class="triage-pill triage-pill-invalid" data-filter="INVALID" id="triage-filter-invalid" onclick="window.SniperUIContacts && window.SniperUIContacts.setFilter('INVALID')">
+                  <span>🔴 Non délivrables</span>
+                  <span class="badge" id="filter-count-invalid">0</span>
+                </button>
+              </div>
+              <div class="triage-bar-meta">
+                <span class="text-secondary fs-xs">« Vérifiée » = boîte prouvée par le serveur ou par Hunter.io</span>
+              </div>
+            </div>
+
+            <!-- Dropzone Complète (quand 0 contact) -->
+            <div id="contacts-dropzone-full">
+              <div class="dropzone" id="dropzone" role="button" tabindex="0">
+                <p class="dropzone-title">Glissez votre fichier de contacts CSV</p>
+                <small class="text-muted">Colonnes reconnues : Email, Prénom, Nom, Entreprise, Rôle. Depuis Excel : Fichier › Enregistrer sous › CSV UTF-8.</small>
+              </div>
+            </div>
+
+            <!-- Dropzone Compacte (quand contacts existants) -->
+            <div id="contacts-dropzone-compact" style="display:none;" class="dropzone-compact">
+              <span class="text-secondary fs-xs">📁 Déposez un autre fichier CSV pour remplacer la liste ou cliquez sur « Importer CSV »</span>
+            </div>
+
+            <div class="error-banner" id="error-banner" style="display:none;" role="alert">
+              <span id="error-message">Une erreur est survenue lors de l'import.</span>
+              <button class="btn btn-ghost btn-sm" id="btn-error-action">Réessayer</button>
+            </div>
+
+            <div class="table-card">
+              <div class="table-toolbar">
+                <span><strong id="contacts-count">0</strong> contacts dans la campagne</span>
+                <span class="text-muted fs-sm">Paquets de 8 contacts / page</span>
+              </div>
+              <div class="contacts-table-container">
+                <table class="data-table" id="contacts-table">
+                  <thead>
+                    <tr>
+                      <th scope="col" class="col-w-26">Nom</th>
+                      <th scope="col" class="col-w-28">Entreprise & rôle</th>
+                      <th scope="col" class="col-w-28">Email professionnel</th>
+                      <th scope="col" class="col-w-18">Vérification</th>
+                    </tr>
+                  </thead>
+                  <tbody id="contacts-tbody"></tbody>
+                </table>
+              </div>
+              <!-- Barre de Pagination -->
+              <div class="pagination-bar" id="contacts-pagination">
+                <span class="pagination-info text-secondary" id="pagination-info">0 contact</span>
+                <div class="pagination-controls">
+                  <button type="button" class="btn btn-ghost btn-sm" id="btn-prev-page" onclick="window.SniperUIContacts && window.SniperUIContacts.changePage(-1)" disabled>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                    <span>Précédent</span>
+                  </button>
+                  <span class="pagination-page-indicator" id="pagination-current">1 / 1</span>
+                  <button type="button" class="btn btn-ghost btn-sm" id="btn-next-page" onclick="window.SniperUIContacts && window.SniperUIContacts.changePage(1)" disabled>
+                    <span>Suivant</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Onglet 2 : Modèles & Édition de Message -->
+        <section class="tab-panel" id="panel-messages" role="tabpanel">
+          <div class="panel-card">
+            <div class="card-header sticky-header">
+              <div>
+                <h2>Édition du message & personnalisation dynamique</h2>
+                <p class="section-desc">Personnalisez l'objet, le texte et le bouton d'action. Utilisez le Spintax pour des empreintes uniques.</p>
+              </div>
+              <div class="header-actions">
+                <button type="button" id="deliverability-score-badge" class="tab-pill tab-pill-green" title="Score du linter de contenu">Score contenu : –</button>
+                <button class="btn btn-primary" id="btn-save-message">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                  <span>💾 Enregistrer</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="message-editor-grid">
+              <!-- Colonne Éditeur -->
+              <div class="editor-col">
+                <div id="deliverability-details"></div>
+
+                <div class="form-group">
+                  <label for="edit-campaign-subject">Objet de l'email (3 à 7 mots conseillés)</label>
+                  <input type="text" id="edit-campaign-subject" class="input-text" placeholder="ex: Optimisation de la vitalité chez {{entreprise}}">
+                </div>
+
+                <div class="variables-toolbar">
+                  <div class="inline-row wrap">
+                    <span class="text-secondary toolbar-label">Variables :</span>
+                    <div id="variables-toolbar-chips"></div>
+                  </div>
+                  <div class="inline-row push-end">
+                    <span class="text-secondary toolbar-label">🎲 Spintax Pro :</span>
+                    <select id="select-spintax-preset" class="select-input">
+                      <option value="">+ Insérer variation Spintax...</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <div class="row-between">
+                    <label for="edit-campaign-body">Corps du message</label>
+                    <span id="body-word-counter" class="text-muted">0 mot (Idéal: 50-120)</span>
+                  </div>
+                  <textarea id="edit-campaign-body" class="input-text" rows="10" placeholder="Rédigez votre email... Utilisez {{prenom}} ou {{entreprise}} pour personnaliser."></textarea>
+                </div>
+
+                <div class="form-row-grid">
+                  <div class="form-group">
+                    <label for="edit-campaign-cta-label">Texte du bouton CTA (Optionnel)</label>
+                    <input type="text" id="edit-campaign-cta-label" class="input-text" placeholder="ex: Découvrir la méthode">
+                  </div>
+                  <div class="form-group">
+                    <label for="edit-campaign-cta-url">URL de destination</label>
+                    <input type="url" id="edit-campaign-cta-url" class="input-text" placeholder="https://votre-site.com">
+                  </div>
+                </div>
+
+                <div class="form-group stealth-toggle-card">
+                  <label class="switch-label">
+                    <input type="checkbox" id="edit-campaign-track-clicks">
+                    <span>🖱️ <strong>Suivre les clics sur le lien</strong> <span class="label-hint">(lien réécrit via votre passerelle publique HTTPS ; décoché = lien direct)</span></span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Colonne Prévisualisation Dynamique -->
+              <div class="preview-col">
+                <div class="preview-header-bar">
+                  <div class="inline-row">
+                    <span class="meta-label">Aperçu boîte</span>
+                    <span id="preview-stealth-badge" class="badge-status badge-verified">Lien direct</span>
+                  </div>
+                  <select id="preview-contact-select" class="select-input"></select>
+                </div>
+                <div id="preview-poka-warning" class="poka-warning-box" style="display: none;"></div>
+                <div class="campaign-preview-box lemlist-preview-box">
+                  <div class="mail-window-header">
+                    <span class="window-dot dot-red"></span>
+                    <span class="window-dot dot-yellow"></span>
+                    <span class="window-dot dot-green"></span>
+                    <span class="mail-window-title">Boîte de réception — Aperçu Client</span>
+                  </div>
+                  <div class="preview-meta preview-meta-from">
+                    <span class="meta-label">De :</span>
+                    <span id="preview-sender-meta">-</span>
+                  </div>
+                  <div class="preview-meta">
+                    <span class="meta-label">Objet :</span>
+                    <strong class="meta-value" id="preview-subject">-</strong>
+                  </div>
+                  <div class="email-body-preview" id="preview-body" tabindex="0"></div>
+                  <div id="preview-cta-container" style="display: none;">
+                    <a id="preview-cta-btn" href="#" target="_blank" class="btn btn-primary btn-sm">-</a>
+                  </div>
+                </div>
+                <div class="preview-actions">
+                  <button id="btn-send-preview-test" class="btn btn-primary btn-sm">
+                    📨 M'envoyer un email de test
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Onglet 3 : 🛡️ Cockpit de Délivrabilité & Score Anti-Spam (NOUVEAU) -->
+        <section class="tab-panel" id="panel-score-checker" role="tabpanel">
+          <div class="panel-card">
+            <div class="card-header sticky-header">
+              <div>
+                <h2>🛡️ Diagnostic de délivrabilité</h2>
+                <p class="section-desc">Contrôles réels : DNS du domaine d'envoi (SPF, DKIM, DMARC, MX), contenu, liens, SpamAssassin. Le placement en boîte se mesure avec le test Mail-Tester.</p>
+              </div>
+            </div>
+            <div id="score-checker-container"></div>
+          </div>
+        </section>
+
+        <!-- Onglet 4 : Envoi & Sécurité -->
+        <section class="tab-panel" id="panel-dispatch" role="tabpanel">
+          <div class="panel-card">
+            <div class="card-header sticky-header">
+              <div>
+                <h2>Envoi cadencé</h2>
+                <p class="section-desc">Envoi via votre compte Google (API Gmail), un email à la fois, dans la limite du quota journalier.</p>
+              </div>
+              <label class="switch-label" title="Cochez pour simuler sans envoyer d'email réel">
+                <input type="checkbox" id="toggle-dry-run">
+                <span>Simulation (sans envoi)</span>
+              </label>
+            </div>
+
+            <div class="callout-notice" id="dispatch-sender-status">Compte Google : vérification…</div>
+
+            <div class="dispatch-config-box">
+              <div class="config-row">
+                <span>Délai aléatoire entre deux envois :</span>
+                <strong id="cfg-delay">–</strong>
+              </div>
+              <div class="config-row">
+                <span>Horaires d'envoi :</span>
+                <strong id="cfg-hours">–</strong>
+              </div>
+              <div class="config-row">
+                <span>Quota journalier :</span>
+                <strong class="text-amber" id="cfg-limit">–</strong>
+              </div>
+              <div class="config-row" id="countdown-row" style="display:none;">
+                <span>Prochain tir dans :</span>
+                <strong class="text-countdown" id="countdown-display">0s</strong>
+              </div>
+              <div class="dispatch-eta-banner" id="dispatch-eta-banner">
+                ⏱️ Calcul de l'horizon temporel...
+              </div>
+              
+              <label class="switch-label" title="Inclut les adresses au MX valide mais non prouvées (port 25 bloqué, catch-all)">
+                <input type="checkbox" id="toggle-include-unverified">
+                <span>Inclure les adresses non prouvées (risque de rebond)</span>
+              </label>
+              <div class="dispatch-actions-row">
+                <button class="btn btn-action" id="btn-launch-dispatch">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                  <span id="btn-launch-label">Démarrer cette campagne</span>
+                </button>
+                <button class="btn btn-danger btn-sm" id="btn-stop-dispatch" style="display:none;">Mettre en pause</button>
+              </div>
+            </div>
+            <div class="dispatch-log" id="dispatch-log" tabindex="0">// Console d'envoi en attente.&#10;// Le contrôle avant envoi est rejoué au lancement : un point bloquant empêche le départ.</div>
+          </div>
+        </section>
+
+        <!-- Onglet 5 : Performances & VM -->
+        <section class="tab-panel" id="panel-performance" role="tabpanel">
+          <div class="panel-card">
+            <div class="card-header">
+              <div>
+                <h2>Clics de la campagne</h2>
+                <p class="section-desc">Clics captés par votre passerelle publique. Les ouvertures ne sont pas mesurées : les proxys d'images (Apple, Gmail) les rendent non fiables.</p>
+              </div>
+              <div class="header-actions">
+                <button class="btn btn-ghost btn-sm" id="btn-sync-vm">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                  <span>Synchroniser</span>
+                </button>
+                <button class="btn btn-ghost btn-sm" id="btn-refresh-stats">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                  <span>Actualiser</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="vm-bridge-box">
+              <span class="meta-label">URL publique de la passerelle de clics :</span>
+              <div class="vm-input-row">
+                <input type="url" id="vm-tracking-url" class="input-text" placeholder="https://clics.votredomaine.com" />
+                <button class="btn btn-primary btn-sm" id="btn-save-vm-url">Enregistrer</button>
+              </div>
+              <small class="text-muted" id="vm-sync-status">Passerelle non testée.</small>
+            </div>
+
+            <div class="stats-row">
+              <div class="stat-pill">
+                <span class="stat-label">Emails envoyés</span>
+                <span class="stat-num" id="stat-sent">0</span>
+              </div>
+              <div class="stat-pill">
+                <span class="stat-label">Cliqueurs uniques (humains)</span>
+                <span class="stat-num" id="stat-clicks">0</span>
+              </div>
+              <div class="stat-pill">
+                <span class="stat-label">Taux de clic (cliqueurs / envoyés)</span>
+                <span class="stat-num stat-success" id="stat-ctr">0%</span>
+              </div>
+            </div>
+            <div class="exports-row">
+              <button class="btn btn-export" id="btn-export-all">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span>Exporter tous</span>
+              </button>
+              <button class="btn btn-export btn-export-hot" id="btn-export-clicked">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                <span>Exporter les cliqueurs</span>
+              </button>
+            </div>
+
+            <!-- Journal des Événements Récents (Passerelle VM 24/7) -->
+            <div class="events-section">
+              <div class="row-between">
+                <strong class="events-title">🛰️ Derniers clics</strong>
+                <span class="text-muted" id="events-count-label">0 événement</span>
+              </div>
+              <div class="contacts-table-container events-table">
+                <table class="data-table" id="tracking-events-table">
+                  <thead>
+                    <tr>
+                      <th>Horodatage</th>
+                      <th>Contact Cible</th>
+                      <th>Filtre anti-bot (indicatif)</th>
+                      <th>Lien</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tracking-events-tbody">
+                    <tr><td colspan="4" class="text-muted table-empty-cell">Aucun clic pour le moment. Cliquez sur « Synchroniser ».</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- MODALE PROFIL & CONNEXIONS -->
+  <div id="modal-profile" class="modal-backdrop" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="modal-profile-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-profile-title">Profil & connexions</h3>
+        <button class="btn btn-ghost btn-sm" id="btn-close-profile" aria-label="Fermer la boîte de dialogue">&times;</button>
+      </div>
+
+      <div class="modal-body" id="form-profile">
+        <div id="profile-status-box" class="profile-status-card state-empty">
+          <div class="status-icon">💡</div>
+          <div>
+            <strong>Profil expéditeur</strong>
+            <p>Connectez votre compte Google pour activer les envois.</p>
+          </div>
+        </div>
+
+        <div class="google-oauth-card">
+          <div class="row-between">
+            <strong class="oauth-title">
+              <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+              <span>Authentification Google OAuth2 (Gmail API)</span>
+            </strong>
+            
+          </div>
+
+          <div id="google-auth-connected" style="display:none;" class="google-connected-row">
+            <div class="google-user-badge">
+              <img id="google-user-avatar" class="google-user-avatar" src="" alt="Avatar" style="display:none;" />
+              <div id="google-connected-user-text"></div>
+            </div>
+            <button type="button" class="btn btn-ghost btn-sm text-error" id="btn-google-disconnect">Déconnecter</button>
+          </div>
+
+          <div id="google-auth-not-connected">
+            <p class="text-secondary oauth-help">Créez un identifiant OAuth « Application Web » dans Google Cloud (API Gmail activée) et déclarez l'URI de redirection : <code id="google-redirect-uri">–</code></p>
+            <div class="oauth-fields">
+              <input type="text" id="google-client-id" class="input-text" placeholder="Client ID Google Cloud" />
+              <input type="password" id="google-client-secret" class="input-text" placeholder="Client Secret Google Cloud" />
+            </div>
+            <button type="button" class="btn btn-google" id="btn-google-auth">
+              <span>Se connecter avec Google</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="profile-name">Nom affiché comme expéditeur</label>
+          <input id="profile-name" type="text" class="input-text" placeholder="ex: Prénom Nom">
+        </div>
+
+        <div class="form-group">
+          <label for="profile-signature">Signature professionnelle</label>
+          <textarea id="profile-signature" class="input-text" placeholder="Prénom Nom — Société"></textarea>
+        </div>
+
+        <div class="form-group form-group-separated">
+          <label for="profile-vm-url">URL publique de la passerelle de clics (HTTPS recommandé)</label>
+          <input id="profile-vm-url" type="url" class="input-text" placeholder="https://clics.votredomaine.com">
+        </div>
+
+        <div class="form-group form-group-separated">
+          <div class="row-between key-head">
+            <label for="profile-hunter-key">Clé API Hunter.io (Optionnel)</label>
+            <button type="button" class="btn btn-ghost btn-sm" id="btn-test-hunter">🔍 Tester la clé & quotas</button>
+          </div>
+          <input id="profile-hunter-key" type="password" class="input-text" placeholder="Clé API Hunter.io (laisser vide pour ne pas l'utiliser)">
+          <div id="hunter-status-box"></div>
+          <small class="text-muted key-hint">La sonde SMTP gratuite passe en premier. Hunter n'est appelé que si vous cochez « Compléter avec Hunter.io » ou lors d'une recherche d'adresse.</small>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="btn-save-profile">💾 Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <script src="ui_helpers.js?v=3"></script>
+  <script src="ui_contacts.js?v=3"></script>
+  <script src="ui_campaigns.js?v=3"></script>
+  <script src="ui_score_checker.js?v=3"></script>
+  <script src="ui_profile.js?v=3"></script>
+  <script src="ui_performance.js?v=3"></script>
+  <script src="app.js?v=3"></script>
+</body>
+</html>

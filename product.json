@@ -1,0 +1,13 @@
+{
+  "id": "outbound-sniper",
+  "name": "Outbound Sniper Studio",
+  "kind": "product",
+  "serves": ["gtm", "dev"],
+  "status": "pre-production",
+  "stack": "node",
+  "entry": "server.js",
+  "surfaces": ["web-local"],
+  "depends_on": [],
+  "gates": ["portes", "lines", "no-inline-data", "syntax"],
+  "notes": "Outil GTM developpe dans le pilier 03. Le champ serves declare ce couplage, que l'arborescence ne pouvait pas exprimer."
+}
